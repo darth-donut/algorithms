@@ -11,7 +11,7 @@ public:
     typedef char heap_type;
     static constexpr heap_type min = 1;
     static constexpr heap_type max = 2;
-    Heap(heap_type type = max) : type(type) { }
+    explicit Heap(heap_type type = max) : type(type) { }
     Heap(std::vector<T>& array, heap_type type = max) 
         : heap(array), type(type) { 
         heapify();
