@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jfong361/data-structures.svg?branch=master)](https://travis-ci.org/jfong361/data-structures)
+
 # Data Structures
 
 Mainly implemented in Java, optimizations are not attempted until the majority of them are completed.
