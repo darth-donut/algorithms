@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="struct.heap.HeapTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2017-01-19T07:40:12" hostname="jiahong" time="0.028">
+  <properties/>
+  <testcase name="remove" classname="struct.heap.HeapTest" time="0.001"/>
+  <testcase name="search" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="sieveDown" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="popRoot" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="getRoot" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="add" classname="struct.heap.HeapTest" time="0.025"/>
+  <testcase name="get" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="pop" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="swap" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="heapify" classname="struct.heap.HeapTest" time="0.0"/>
+  <testcase name="sieveUp" classname="struct.heap.HeapTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

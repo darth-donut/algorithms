@@ -1,0 +1,21 @@
+apply plugin: 'java'
+
+version='1.0.0SNAPSHOT'
+sourceCompatibility=1.8
+
+jar {
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.0.0-M2',
+                'junit:junit:4.12'
+}

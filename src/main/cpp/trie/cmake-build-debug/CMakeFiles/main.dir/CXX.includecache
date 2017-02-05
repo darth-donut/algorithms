@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/jiahong/Documents/repository/data_structures/src/main/cpp/trie/src/Node.h
+memory
+-
+iostream
+-
+
+/home/jiahong/Documents/repository/data_structures/src/main/cpp/trie/src/Trie.h
+memory
+-
+Node.h
+/home/jiahong/Documents/repository/data_structures/src/main/cpp/trie/src/Node.h
+
+/home/jiahong/Documents/repository/data_structures/src/main/cpp/trie/src/main.cc
+cassert
+-
+fstream
+-
+Trie.h
+/home/jiahong/Documents/repository/data_structures/src/main/cpp/trie/src/Trie.h
+

@@ -1,0 +1,9 @@
+IMPORTANT
+DONE: need MTF and CHAIN ins, search and del operations
+DONE: need traverse and free functions
+
+NOW USE DRIVER TO TEST, + MAKEFILE (word count program?)
+
+LATER
+crack uni hash using gcd?
+make a cuckoo/ murmurhash table?
