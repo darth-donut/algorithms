@@ -89,6 +89,7 @@ Heap<T>::get(const T& key) {
 template<class T>
 void
 Heap<T>::heapify() {
+    if (heap.size() == 1) return;
     // loop invariant: parent is set to the last possible parent in the heap
     for (auto parent = heap.size()/2-1; parent >= 0; --parent) {
         sieve_down(parent);
