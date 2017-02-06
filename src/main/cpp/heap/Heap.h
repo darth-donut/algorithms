@@ -131,8 +131,8 @@ template<class T>
 bool
 Heap<T>::require_swap(size_type index1, size_type index2) const {
     if (type == min)
-        return heap[index2 ]< heap[index1];
-    return !(heap[index2 ]<= heap[index1]);
+        return heap[index2] < heap[index1];
+    return !(heap[index2] <= heap[index1]);
 }
 
 #endif
