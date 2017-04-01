@@ -9,10 +9,10 @@ class Heap {
 public:
     typedef typename std::vector<T>::size_type size_type;
     typedef char heap_type;
-    static constexpr heap_type min = 1;
-    static constexpr heap_type max = 2;
-    explicit Heap(heap_type type = max) : type(type) { }
-    Heap(std::vector<T>& array, heap_type type = max) 
+    static constexpr heap_type MIN = 1;
+    static constexpr heap_type MAX = 2;
+    explicit Heap(heap_type type = MAX) : type(type) { }
+    Heap(std::vector<T>& array, heap_type type = MAX) 
         : heap(array), type(type) { 
         heapify();
     }
@@ -130,7 +130,7 @@ Heap<T>::sieve_down(size_type parent) {
 template<class T>
 bool
 Heap<T>::require_swap(size_type index1, size_type index2) const {
-    if (type == min)
+    if (type == MIN)
         return heap[index2] < heap[index1];
     return !(heap[index2] <= heap[index1]);
 }

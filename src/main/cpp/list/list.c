@@ -1,190 +1,176 @@
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 #include "list.h"
+#include "util.h"
 
-static void *smalloc(size_t size);
-static void foldl(Node n, void (*action) (void *), void (*action2)(void *));
-static void foldr(Node n, void (*action) (void *), void (*action2)(void *));
-static void *find(Node n, void *key, int (*cmp) (void *, void *));
 
 List
-Lcreate(void) {
-    List L = smalloc(sizeof(*L));
-    assert(L);
-    L-> head    = NULL;
-    L-> tail    = NULL;
-    L-> size    =    0;
-    return L;
-}
-
-
-/* a push to the head
- * can create a list by calling Linsert(NULL, data)*/
-List
-Lpush(List L, void *data) {
-    if (!L)
-        L = Lcreate();
-
-    Node n  = (Node)smalloc(sizeof(*n));
-    n->data = data;
-    n->next = L->head;
-    n->prev = NULL;
-    if (!L->tail)
-        L->tail       = n;
-    else
-        L->head->prev = n;
-
-    L->head = n;
-    L->size++;
-    return L;
-}
-
-
-/* appending to tail of list
- * also can create by calling Lappend(NULL, data) */
-List
-Lappend(List L, void *data) {
-    if (!L)
-        L = Lcreate();
-
-    Node n          = (Node)smalloc(sizeof(*n));
-    n->data         = data;
-    n->next         = NULL;
-    n->prev         = L->tail;
-
-    if (!L->tail)
-        L->head         = n;
-    else
-        L->tail->next   = n;
-    L->tail             = n;
-    L->size++;
-    return L;
-}
-
-
-/* deletes the last item out of the list */
-void
-*Lpop(List L) {
-    assert(L && "Empty list provided");
-    Node buff           = L->tail;
-    assert(buff);
-    void *data          = buff->data;
-    L->tail             = buff->prev;
-    if (!L->tail)
-        L->head         = NULL;
-    else
-        L->tail->next   = NULL;
-    L->size--;
-    free(buff);
-    return data;
+Lnew(int (*cmp)(const void *, const void *)) {
+    List lst = smalloc(sizeof(*lst) * 1);
+    lst->cmp = cmp;
+    lst->head = NULL;
+    lst->tail = NULL;
+    lst->size = 0;
+    return lst;
 }
 
 void
-*Ldequeue(List L) {
-    assert(L && "Empty list provided");
-    Node buff           = L->head;
-    assert(buff);
-    void *data          = buff->data;
-    L->head             = buff->next;
-    if (!L->head)
-        L->tail         = NULL;
-    else
-        L->head->prev   = NULL;
-    free(buff);
-    L->size--;
-    return data;
+Lfree(List lst, void (*cleanup)(void * data)) {
+    Node root = lst->head;
+    Node prev;
+    while (root) {
+        if (cleanup)
+            cleanup(root->data);
+        prev = root;
+        root = root->next;
+        free(prev);
+    }
+    free(lst);
 }
 
 void
-Lfree(List L) {
-    foldl(L->head, NULL, free);
-    free(L);
+Linsert(List lst, const size_t index, void *data) {
+    // create node and assign data
+    Node node = smalloc(sizeof(*node));
+    node->data = data;
+
+    // CASE 1: trying to insert in head
+    if (index == 0) {
+        node->prev = NULL;
+        if (lst->head) {
+            // head's no longer head, it has a prev
+            lst->head->prev = node;
+        } else { // was empty list
+            lst->tail = node;
+        }
+        node->next = lst->head;
+        lst->head = node;
+    } else {
+        Node candidate = lst->head;
+
+        if (candidate == NULL) {
+            // SPECIAL CASE: empty list
+            error_msg("Logic error: trying to add with index in an empty list", 1);
+        } else {
+            /* if we're here, it means we're supposed to add in the middle of the list, or by the tail,
+             * depending on parameter index::size_t, raise error and exit as fatal otherwise */
+            size_t i = 0;
+            for (; candidate && i < index; ++i)
+                candidate = candidate->next;
+            if (i != index) {
+                /* if we're here it means for loop failed with candidate == NULL but i != index
+                 * It means user tried to insert at index past tail, exit as fatal */
+                error_msg("Trying to insert past tail in list, fatal error", 1);
+            } else if (candidate != NULL) {
+                // CASE 2: trying to insert somewhere in the middle of the list
+
+                // update prev node's next
+                candidate->prev->next = node;
+                // update new node's prev
+                node->prev = candidate->prev;
+                // update new node's next
+                node->next = candidate;
+                // update candidate's prev node
+                candidate->prev = node;
+
+            } else {
+                // CASE 3: trying to insert in tail
+
+                node->next = NULL;
+                if (lst->tail) {
+                    // old tail is no longer a tail, it has a next, i.e. new node
+                    lst->tail->next = node;
+                    node->prev = lst->tail;
+                    lst->tail = node;
+                } else {
+                    lst->head = lst->tail = node;
+                    node->prev = NULL;
+                }
+            }
+
+        }
+    }
+    // increase list size by 1
+    ++lst->size;
 }
 
-uint
-Lsize(List L) {
-    assert(L && "Empty list provided");
-    return L->size;
-}
-
-
-void
-Ltraversel(List L, void (*action) (void *)) {
-    foldl(L->head, action, NULL);
-}
-
-void
-Ltraverser(List L, void (*action) (void *)) {
-    foldr(L->tail, action, NULL);
-}
-
-void
-*Lfind(List L, void *key, int (*cmp) (void *, void *)) {
-    assert(L && "Empty list provided");
+void *
+Lfind(List lst, const void *data) {
     Node n;
-    return (n = find(L->head, key, cmp))
-        ? n->data
-        : NULL;
-
+    return (n = Lfind_raw_node(lst, data)) ? n->data : NULL;
 }
 
-void
-*Ldel(List L, void *key, int (*cmp) (void *, void *)) {
-    Node n      = find(L->head, key, cmp);
-    void *data  = n ? n->data : NULL;
-    if (n) {
+void *
+Lremove(List lst, const void *data) {
+    Node node = Lfind_raw_node(lst, data);
+    if (!node) return NULL;
 
-        if (n->prev)
-            n->prev->next = n->next;
-        else
-            L->head       = n->next;
-
-        if (n->next)
-            n->next->prev = n->prev;
-        else
-            L->tail       = n->prev;
-
-        L->size--;
+    --lst->size;
+    // update list's head and tail respectively
+    if (lst->head && lst->cmp(lst->head->data, data) == 0) {
+        lst->head = node->next;
+        if (lst->head == NULL) {
+            assert(lst->size == 0);
+            lst->tail = NULL;
+        }
     }
-    return data;
-}
-
-
-static void
-foldr(Node n, void (*action) (void *), void (*action2)(void *)) {
-    if (n) {
-        Node node = n;
-        if (action) action(n->data);
-        if (action2) action2(n);
-        foldr(node->prev, action, action2);
-    }
-}
-static void
-foldl(Node n, void (*action) (void *), void (*action2)(void *)) {
-    if (n) {
-        Node node = n;
-        if (action) action(n->data);
-        if (action2) action2(n);
-        foldl(node->next, action, action2);
+    if (lst->tail && lst->cmp(lst->tail->data, data) == 0) {
+        lst->tail = node->prev;
     }
 
+    assert(lst->tail != NULL || lst->size == 0);
+
+    // update node's neighbours
+    if (node->prev) {
+        node->prev->next = node->next;
+    }
+    if (node->next) {
+        node->next->prev = node->prev;
+    }
+
+    // release resources
+    void *out_data = node->data;
+    free(node);
+
+    // decrease size by 1
+    return out_data;
 }
 
-static void
-*find(Node n, void *key, int (*cmp) (void *, void *)) {
-    return !n
-        ? NULL
-        : cmp(n->data, key) == 0
-            ? n
-            : find(n->next, key, cmp);
+void *
+Lfront(List lst) {
+    return lst->size == 0 ? NULL : Lremove(lst, lst->head->data);
 }
 
-static void
-*smalloc(size_t size) {
-    void *buffer = malloc(size);
-    assert(buffer && "Malloc failed");
-    return buffer;
+void *
+Lback(List lst) {
+    return lst->size == 0 ? NULL : Lremove(lst, lst->tail->data);
 }
 
+Node
+Lfind_raw_node(List lst, const void *data) {
+    Node node = lst->head;
+    while (node) {
+        if (lst->cmp(node->data, data) == 0)
+            return node;
+        node = node->next;
+    }
+    return NULL;
+}
+
+
+size_t
+Lindex_of(List lst, const void *data) {
+    Node node = lst->head;
+    size_t index = 0;
+    while (node) {
+        if (lst->cmp(data, node->data) == 0) {
+            return index;
+        }
+        node = node->next;
+        ++index;
+    }
+    return SIZE_MAX;
+}
